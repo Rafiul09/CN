@@ -1,0 +1,394 @@
+Title: Configuration of Virtual Local Area Network (VLAN) with
+VLSM
+Switch 0
+en
+config t
+vlan 10
+name Faculty
+exit
+vlan 20
+name Student
+exit
+➔ Assigning ports to the vlans and trunking f0/1
+int range f0/2- f0/15
+switchport mode access
+switchport access vlan 10
+exit
+int range f0/16- f0/24
+switchport mode access
+switchport access vlan 20
+exit
+int f0/1
+switchport mode trunk
+switchport trunk allowed vlan all
+
+Switch 1
+en
+config t
+vlan 10
+name Faculty
+exit
+vlan 20
+name Student
+exit
+➔ Assigning ports to the vlans and trunking f0/1
+int range f0/2- f0/15
+switchport mode access
+switchport access vlan 10
+exit
+int range f0/16- f0/24
+switchport mode access
+switchport access vlan 20
+exit
+int f0/1
+switchport mode trunk
+switchport trunk allowed vlan all
+
+Router0
+en
+conf t
+➔ Assigning hostname AIUB to Router0
+hostname AIUB
+➔ Applying encapsulation and assigning ip to sub-interfaces
+int f0/0
+no shut
+int f0/0.10
+encapsulation dot1q 10
+ip address 172.16.0.126 255.255.255.128
+exit
+int f0/0.20
+encapsulation dot1q 20
+ip address 172.16.0.190 255.255.255.192
+exit
+exit
+➔ Assigning ip to serial interface
+int s0/3/0
+ip address 192.168.10.1 255.255.255.252
+clock rate 64000
+no shut
+➔ Assigning routing protocol (OSPF with autonomous number 55)
+router ospf 55
+network 192.168.10.0 0.0.0.3 area 0
+network 172.16.0.0 0.0.0.127 area 0
+network 172.16.0.128 0.0.0.63 area 0
+
+
+Router 1
+en
+conf t
+int f0/0
+no shut
+➔ Assigning hostname NSU to Router1
+hostname NSU
+➔ Applying encapsulation and assigning ip to sub-interfaces
+int f0/0.10
+encapsulation dot1q 10
+ip address 10.0.0.62 255.255.255.192
+exit
+int f0/0.20
+encapsulation dot1q 20
+ip address 10.0.0.94 255.255.255.224
+exit
+➔ Assigning ip to serial interface
+int s0/3/0
+ip address 192.168.10.2 255.255.255.252
+no shut
+exit
+➔ Assigning routing protocol (OSPF with autonomous number 80)
+router ospf 80
+network 192.168.10.0 0.0.0.3 area 0
+network 10.0.0.0 0.0.0.63 area 0
+network 10.0.0.64 0.0.0.31 area 0
+
+
+-----------------------------------------------
+-----------------------------------------------
+Title: Configuration of EIGRP routing protocol with VLSM
+
+Router 0
+en
+conf t
+int f0/0
+ip address 172.16.3.254 255.255.252.0
+no shut
+exit
+int s0/1/0
+ip address 172.16.7.33 255.255.255.252
+no shut
+exit
+router eigrp 170
+network 172.16.0.0 0.0.3.255
+network 172.16.7.32 0.0.0.3
+exit
+
+
+Router 1
+en
+conf t
+int f0/0
+ip address 172.16.6.254 255.255.255.0
+no shut
+exit
+int s0/0/0
+ip address 172.16.7.37 255.255.255.252
+no shut
+exit
+router eigrp 170
+network 172.16.6.0 0.0.0.255
+network 172.16.7.36 0.0.0.3
+
+Router 2
+en
+conf t
+int f0/0
+ip address 172.16.5.254 255.255.254.0
+no shut
+exit
+int s0/3/0
+ip address 172.16.7.41 255.255.255.252
+no shut
+exit
+router eigrp 170
+network 172.16.4.0 0.0.1.255
+network 172.16.7.40 0.0.0.3
+
+Router 3
+en
+conf t
+int f0/0
+ip address 172.16.7.30 255.255.255.224
+no shut
+exit
+int s0/2/0
+ip address 172.16.7.34 255.255.255.252
+no shut
+exit
+int s0/2/1
+ip address 172.16.7.38 255.255.255.252
+no shut
+exit
+int s0/1/0
+ip address 172.16.7.42 255.255.255.252
+no shut
+exit
+router eigrp 170
+network 172.16.7.0 0.0.0.31
+network 172.16.7.32 0.0.0.3
+network 172.16.7.36 0.0.0.3
+network 172.16.7.40 0.0.0.3
+
+
+-----------------------------------------------
+-----------------------------------------------
+s0
+
+en
+conf t
+❖ Assigning the name of VTP domain
+vtp domain AIUB
+❖ Creating vlans and assigning names to the vlans
+vlan 2
+name CSE
+exit
+vlan 4
+name EEE
+exit
+❖ Assigning trunk ports
+int f0/1
+switchport mode trunk
+switchport trunk allowed vlan all
+exit
+int f0/2
+switchport mode trunk
+switchport trunk allowed vlan all
+exit
+int f0/3
+switchport mode trunk
+switchport trunk allowed vlan all
+
+
+S1
+
+en
+conf t
+❖ Changing VTP mode
+vtp mode client
+❖ Assigning ports to the vlans
+int range f0/4-f0/15
+switchport mode access
+switchport access vlan 2
+exit
+int range f0/16-f0/24
+switchport mode access
+switchport access vlan 4
+
+
+Switch2
+en
+conf t
+❖ Changing VTP mode
+vtp mode client
+❖ Assigning ports to the vlans
+int range f0/4-f0/15
+switchport mode access
+switchport access vlan 2
+exit
+int range f0/16-f0/24
+switchport mode access
+switchport access vlan 4
+
+
+
+Router0
+
+en
+conf t
+❖ Applying encapsulation and assigning ip to sub-interfaces
+int f0/0
+no shut
+int f0/0.2
+encapsulation dot1q 2
+ip address 172.18.3.254 255.255.252.0
+int f0/0.4
+encapsulation dot1q 4
+ip address 172.18.4.254 255.255.255.0
+exit
+❖ Creating DHCP pool
+ip dhcp pool dpool2
+network 172.18.0.0 255.255.252.0
+default 172.18.3.254
+exit
+ip dhcp pool dpool4
+network 172.18.4.0 255.255.255.0
+default 172.18.4.254
+❖ Assigning ip to serial interface
+int s0/3/0
+ip address 100.0.0.1 255.255.255.252
+clock rate 64000
+no shut
+exit
+❖ Assigning routing protocol (OSPF with autonomous number 40)
+router ospf 40
+network 172.18.0.0 0.0.3.255 area 0
+network 172.18.4.0 0.0.0.255 area 0
+network 100.0.0.0 0.0.0.3 area 0
+
+
+Switch3
+
+en
+conf t
+❖ Creating vlans and assigning names to the vlans
+vlan 3
+name HR
+exit
+vlan 6
+name MKT
+exit
+❖ Assigning trunk ports
+int f0/1
+switchport mode trunk
+switchport trunk allow vlan all
+exit
+❖ Assigning ports to the vlans
+int range f0/2-f0/13
+switchport mode access
+switchport access vlan 3
+exit
+int range f0/14-f0/24
+switchport mode access
+switchport access vlan 6
+
+
+Router1
+en
+conf t
+❖ Assigning ip to serial interface
+int s0/3/0
+ip address 100.0.0.2 255.255.255.252
+no shut
+exit
+int s0/3/1
+ip address 100.0.0.5 255.255.255.252
+clock rate 64000
+no shut
+int f0/0
+no shut
+exit
+int f0/0
+no shut
+❖ Applying encapsulation and assigning ip to sub-interfaces
+int f0/0.3
+encapsulation dot1q 3
+ip address 172.24.1.254 255.255.254.0
+exit
+int f0/0.6
+encapsulation dot1q 6
+ip address 172.24.2.62 255.255.255.192
+exit
+❖ Creating DHCP pool
+ip dhcp pool dpool3
+network 172.24.0.0 255.255.254.0
+default 172.24.1.254
+exit
+ip dhcp pool dpool6
+network 172.24.2.0 255.255.255.192
+default 172.24.2.62
+exit
+❖ Assigning routing protocol (OSPF with autonomous number 80)
+router ospf 80
+network 172.24.0.0 0.0.1.255 area 0
+network 172.24.2.0 0.0.0.63 area 0
+network 100.0.0.0 0.0.0.3 area 0
+network 100.0.0.4 0.0.0.3 area 0
+
+
+Router2
+en
+conf t
+❖ Assigning ip to serial interface
+int s0/3/0
+ip address 100.0.0.5 255.255.255.252
+no shut
+exit
+❖ Assigning ip to fast-ethernet interface
+int f0/0
+ip address 192.168.10.14 255.255.255.240
+no shut
+exit
+❖ Creating DHCP pool
+ip dhcp pool svr
+network 192.168.10.0 255.255.255.240
+default 192.168.10.14
+exit
+❖ Assigning routing protocol (OSPF with autonomous number 100)
+router ospf 100
+network 100.0.0.4 0.0.0.3 area 0
+network 192.168.10.0 0.0.0.15 area 0
+❖ Natting in Router 0
+access-list 2 permit 172.18.0.0 0.0.3.255
+access-list 4 permit 172.18.4.0 0.0.0.255
+ip nat inside source list 2 interface s0/3/0 overload
+ip nat inside source list 4 interface s0/3/0 overload
+int s0/3/0
+ip nat outside
+exit
+int f0/0
+ip nat inside
+❖ Natting in Router 1
+access-list 3 permit 172.24.0.0 0.0.1.255
+access-list 6 permit 172.24.2.0 0.0.0.63
+ip nat inside source list 3 interface s0/3/1 overload
+ip nat inside source list 6 interface s0/3/1 overload
+int s0/3/1
+ip nat outside
+exit
+int f0/0
+ip nat inside
+❖ Natting in Router 2
+ip nat inside source static 192.168.10.1 100.0.0.6
+int f0/0
+ip nat inside
+exit
+int s0/3/0
+ip nat outside
